@@ -110,6 +110,7 @@ class KNearestNeighbor(object):
     """
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
+    
     dists = np.zeros((num_test, num_train)) 
     
     # square and sum all of the test and training point column elements, separately
