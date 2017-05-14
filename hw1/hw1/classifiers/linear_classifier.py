@@ -30,7 +30,7 @@ class LinearClassifier(object):
     num_classes = np.max(y) + 1 # assume y takes values 0...K-1 where K is number of classes
     if self.W is None:
       # lazily initialize W
-      self.W = 0.001 * np.random.randn(dim, num_classes)
+      self.W = 0.001 * np.random.randn(num_classes, dim)
 
     # Run stochastic gradient descent to optimize W
     loss_history = []
