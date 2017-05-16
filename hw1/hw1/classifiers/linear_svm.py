@@ -3,23 +3,18 @@ from random import shuffle
 
 def structured_loss_simple(W, X, y, reg):
   """
-  Structured SVM loss function, naive implementation (with loops).
-
-  Inputs have dimension D, there are C classes, and we operate on minibatches
-  of N examples.
-
+  Structured SVM loss function, naive implementation (with loops)
   Inputs:
-  - W: A numpy array of shape (D, C) containing weights.
-  - X: A numpy array of shape (N, D) containing a minibatch of data.
-  - y: A numpy array of shape (N,) containing training labels; y[i] = c means
-    that X[i] has label c, where 0 <= c < C.
+  - W: C x D array of weights
+  - X: D x N array of data. Data are D-dimensional columns
+  - y: 1-dimensional array of length N with labels 0...K-1, for K classes
   - reg: (float) regularization strength
-
-  Returns a tuple of:
+  Returns:
+  a tuple of:
   - loss as single float
   - gradient with respect to weights W; an array of same shape as W
   """
-  dW = np.zeros(W.shape) # initialize the gradient as zero
+  dW = np.zeros((X.T).shape) # initialize the gradient as zero
 
   # compute the loss and the gradient
   num_classes = W.shape[1]
@@ -29,29 +24,35 @@ def structured_loss_simple(W, X, y, reg):
     scores = X[i].dot(W)
     correct_class_score = scores[y[i]]
     for j in xrange(num_classes):
-      margin = scores[j] - correct_class_score + 1 # note delta = 1
-      if j == y[i]:
+      if j == y[i]: # If correct class
         continue
-
+      margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
         loss += margin
+        dW[j, :] += X[:, i].T
+        dW[y[i], :] -= X[:, i].T
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
   loss /= num_train
 
+  # Average gradients as well
+  dW /= num_train
+
   # Add regularization to the loss.
   loss += 0.5 * reg * np.sum(W * W)
+
+  # Add regularization to the gradient
+  dW += reg * W
 
   #############################################################################
   # TODO:                                                                     #
   # Compute the gradient of the loss function and store it dW.                #
-  # Rather than first computing the loss and then computing the derivative,   #
+  # Rather that first computing the loss and then computing the derivative,   #
   # it may be simpler to compute the derivative at the same time that the     #
   # loss is being computed. As a result you may need to modify some of the    #
   # code above to compute the gradient.                                       #
-  ############################################################################# 
-
+  #############################################################################
 
   return loss, dW
 
