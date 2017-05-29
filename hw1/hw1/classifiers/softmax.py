@@ -47,7 +47,7 @@ def softmax_loss_simple(W, X, y, reg):
         sum_exp += np.exp(w)
         
     for i in xrange(0, M):
-        dW[i, :] += 1.0/sum_exp * np.exp(scores[i]) * X[:, x]
+        dW[i, :] += 1.0/sum_exp * np.exp(weights[i]) * X[:, x]
         if i == y[x]:
             dW[i, :] -= X[:, x]
             
