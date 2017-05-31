@@ -34,20 +34,21 @@ def softmax_loss_simple(W, X, y, reg):
   #############################################################################
 
 
-  M,N = W.shape
+  D,C = W.shape
+  N,D = X.shape  
   
-  for x in xrange(0, X.shape[1]):
-    weights = W.dot(X[:, x])
+  for x in xrange(0, D):
+    weights = np.dot(W.T, X[x, :])
     weights -= np.max(weights) # subtract max to prevent instability
     
-    loss -= scores[y[x]]
+    loss -= weights[y[x]]
     sum_exp = 0.0
     
     for w in weights:
         sum_exp += np.exp(w)
         
-    for i in xrange(0, M):
-        dW[i, :] += 1.0/sum_exp * np.exp(weights[i]) * X[:, x]
+    for i in xrange(0, D):
+        dW[i, :] += (1.0 / sum_exp * np.exp(weights[i]) * X[x, :])
         if i == y[x]:
             dW[i, :] -= X[:, x]
             
