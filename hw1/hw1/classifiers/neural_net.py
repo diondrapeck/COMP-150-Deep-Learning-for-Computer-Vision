@@ -76,14 +76,23 @@ class TwoLayerNet(object):
     #############################################################################
     # evaluate class scores with a 2-layer Neural Network
 
+    layer1 = np.maximum(X.dot(W1) + b1, 0 ) # element-wise maxima of 0 and X*W1
+    layer2 = layer1.dot(W2) + b2 # update score
+
+    scores = layer2
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
-    
+      
     # If the targets are not given then jump out, we're done
     if y is None:
       return scores
 
+    # Creating a output matrix from output vector
+    Y = np.zeros(layer2.shape)
+    for i,row in enumerate(Y):
+        row[y[i]] = 1
+        
     # Compute the loss
     loss = 0.0
     #############################################################################
@@ -93,7 +102,16 @@ class TwoLayerNet(object):
     # classifier loss. So that your results match ours, multiply the            #
     # regularization loss by 0.5                                                #
     #############################################################################
-
+    
+    exp_layer2 = np.exp(layer2)
+    scores = (exp_layer2.T/np.sum(exp_layer2, axis = 1)).T
+    
+    for i in range(N):
+      loss -= np.log(scores[i][y[i]])
+    loss /= N
+    loss += 0.5*reg*np.sum(W1 * W1)  
+    loss += 0.5*reg*np.sum(W2 * W2)  
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -108,6 +126,18 @@ class TwoLayerNet(object):
     # http://cs231n.github.io/neural-networks-case-study/#net                   #
     #############################################################################
 
+    dLayer2 = scores - Y
+    dW2 = ((dLayer2.T).dot(layer1)).T/N + reg*W2
+    db2 = (dLayer2.T).dot(np.ones(layer1.shape[0]))/N
+    dLayer1 = dLayer2.dot(W2.T)
+    dW1 = (((dLayer1*(layer1>0)).T).dot(X)).T/N + reg*W1
+    db1 = (((dLayer1*(layer1>0)).T).dot(np.ones(X.shape[0]))).T/N
+      
+    grads['W2'] = dW2
+    grads['b2'] = db2
+    grads['W1'] = dW1
+    grads['b1'] = db1
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -151,7 +181,11 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-
+        
+      batch_indicies = np.random.choice(num_train, batch_size)
+      X_batch = X[batch_indicies]
+      y_batch = y[batch_indicies]
+    
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -167,6 +201,9 @@ class TwoLayerNet(object):
       # stored in the grads dictionary defined above.                         #
       #########################################################################
 
+      for variable in self.params:
+          self.params[variable] -= learning_rate*grads[variable]
+        
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -177,8 +214,8 @@ class TwoLayerNet(object):
       # Every epoch, check train and val accuracy and decay learning rate.
       if it % iterations_per_epoch == 0:
         # Check accuracy
-        train_acc = (self.predict(X_batch) == y_batch).mean()
-        val_acc = (self.predict(X_val) == y_val).mean()
+        train_acc = self.predict(X_batch) == y_batch
+        val_acc = self.predict(X_val) == y_val
         train_acc_history.append(train_acc)
         val_acc_history.append(val_acc)
 
@@ -212,6 +249,13 @@ class TwoLayerNet(object):
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
 
+    layer1 = np.maximum(X.dot(self.params['W1']) + self.params['b1'], 0 )
+    layer2 = layer1.dot(self.params['W2']) + self.params['b2']
+    exp_layer2 = np.exp(layer2)
+    scores   = (exp_layer2.T/np.sum(exp_layer2, axis = 1)).T
+    
+    y_pred = np.argmax(scores, axis = 1)
+    
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
