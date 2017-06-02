@@ -92,20 +92,21 @@ class LinearClassifier(object):
       array of length N, and each element is an integer giving the predicted
       class.
     """
-    y_pred = np.zeros(X.shape[0])
+    y_pred = np.zeros(X.shape[1])
     ###########################################################################
     # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-
-    labels = np.dot(self.W, X)
-    y_pred = labels.argmax(axis=0)
+   
+    labels = X.dot(self.W)
+    y_pred = np.argmax(labels, axis = 1)
     
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
     return y_pred
 
+    
   def loss(self, X_batch, y_batch, reg):
     """
     Compute the loss function and its derivative.
